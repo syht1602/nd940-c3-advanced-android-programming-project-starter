@@ -28,6 +28,7 @@ class LoadingButton @JvmOverloads constructor(
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
     private val textPaint = Paint(Paint.ANTI_ALIAS_FLAG)
     private val loadingIconPaint = Paint(Paint.ANTI_ALIAS_FLAG)
+    private val animator = ValueAnimator.ofFloat(0f, 1f)
 
     private var title: String = ""
     private var text: String = ""
@@ -38,15 +39,17 @@ class LoadingButton @JvmOverloads constructor(
             is ButtonState.Loading -> {
                 textPaint.color = textLoadingColor
                 title = textLoading
-                rootView.isEnabled = false
-                animateButton()
+                this.isEnabled = false
             }
 
             is ButtonState.Completed -> {
                 textPaint.color = textColor
                 title = text
                 progressCount = 0f
-                rootView.isEnabled = true
+                this.isEnabled = true
+                if (animator != null && animator.isRunning) {
+                    animator.end()
+                }
                 invalidate()
             }
 
@@ -109,26 +112,22 @@ class LoadingButton @JvmOverloads constructor(
     fun updateButtonState(buttonState: ButtonState) {
         this.buttonState = buttonState
     }
-
-    private fun animateButton() {
-        ValueAnimator.ofFloat(0f, 1f).apply {
-            val updateListener = ValueAnimator.AnimatorUpdateListener { animated ->
-                progressCount = animated.animatedValue as Float
-                invalidate()
-            }
-
-            duration = 1000L
-
-            addUpdateListener(updateListener)
-            addListener(object : AnimatorListenerAdapter() {
-                override fun onAnimationEnd(animation: Animator) {
-                    super.onAnimationEnd(animation)
-                    buttonState = ButtonState.Completed
-                }
-            })
-            start()
+    fun animateButton(repeat: Int) {
+        animator.duration = 2000
+        animator.repeatMode = ValueAnimator.RESTART
+        animator.repeatCount = repeat
+        animator.addUpdateListener {
+            progressCount = it.animatedValue as Float
+            invalidate()
         }
+        animator.addListener(object : AnimatorListenerAdapter() {
 
+            override fun onAnimationEnd(animation: Animator) {
+                super.onAnimationEnd(animation)
+                buttonState = ButtonState.Completed
+            }
+        })
+        animator.start()
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {

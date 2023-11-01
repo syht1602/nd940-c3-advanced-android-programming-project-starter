@@ -1,5 +1,6 @@
 package com.udacity
 
+import android.animation.ValueAnimator
 import android.app.DownloadManager
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -20,6 +21,7 @@ import com.udacity.databinding.ActivityMainBinding
 import com.udacity.notification.NOTIFICATION_ID
 import com.udacity.notification.sendNotification
 
+
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
@@ -30,6 +32,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var notificationManager: NotificationManager
     private lateinit var pendingIntent: PendingIntent
     private lateinit var action: NotificationCompat.Action
+    private lateinit var downloadManager: DownloadManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,6 +45,7 @@ class MainActivity : AppCompatActivity() {
             NotificationManager::class.java
         ) as NotificationManager
         registerReceiver(receiver, IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE))
+        downloadManager = getSystemService(DOWNLOAD_SERVICE) as DownloadManager
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel(
@@ -62,17 +66,24 @@ class MainActivity : AppCompatActivity() {
                 when (binding.contentView.radioGroup.checkedRadioButtonId) {
                     R.id.glideItem -> {
                         downloadType = DownloadType.GLIDE
+                        binding.contentView.customButton.animateButton(ValueAnimator.INFINITE)
+                        download()
                     }
 
                     R.id.loadAppItem -> {
                         downloadType = DownloadType.LOAD_APP
+                        binding.contentView.customButton.animateButton(ValueAnimator.INFINITE)
+                        download()
                     }
 
                     R.id.retrofitItem -> {
                         downloadType = DownloadType.RETROFIT
+                        binding.contentView.customButton.animateButton(ValueAnimator.INFINITE)
+                        download()
                     }
 
                     else -> {
+                        binding.contentView.customButton.animateButton(0)
                         Toast.makeText(
                             applicationContext,
                             getString(R.string.radio_not_selected),
@@ -80,7 +91,6 @@ class MainActivity : AppCompatActivity() {
                         ).show()
                     }
                 }
-                download()
             }
         }
 
@@ -103,6 +113,7 @@ class MainActivity : AppCompatActivity() {
                     context,
                     detailPendingIntent
                 )
+                binding.contentView.customButton.updateButtonState(ButtonState.Completed)
             }
         }
     }
@@ -116,7 +127,6 @@ class MainActivity : AppCompatActivity() {
                 .setAllowedOverMetered(true)
                 .setAllowedOverRoaming(true)
 
-        val downloadManager = getSystemService(DOWNLOAD_SERVICE) as DownloadManager
         downloadID =
             downloadManager.enqueue(request)// enqueue puts the download request in the queue.
     }
@@ -131,6 +141,11 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(this, "Notification permission is already granted.", Toast.LENGTH_SHORT)
                 .show()
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        unregisterReceiver(receiver)
     }
 
     companion object {

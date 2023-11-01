@@ -51,6 +51,11 @@ fun NotificationManager.sendNotification(
         .setContentIntent(pendingIntent)
         .setAutoCancel(true)
         .setPriority(NotificationCompat.PRIORITY_HIGH)
+        .addAction(
+            R.drawable.ic_assistant_black_24dp,
+            applicationContext.getString(R.string.notification_action),
+            pendingIntent
+        )
     notify(NOTIFICATION_ID, builder.build())
 }
 
