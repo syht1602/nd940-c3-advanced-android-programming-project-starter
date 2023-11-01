@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <declare-styleable name="LoadingButton">
-<!--   TODO: create custom attributes for the view-->
+        <attr name="btnColor" format="color"/>
+        <attr name="btnLoadingColor" format="color"/>
+        <attr name="btnTextColor" format="color"/>
+        <attr name="btnTextLoadingColor" format="color"/>
+        <attr name="btnText" format="string"/>
+        <attr name="btnTextLoading" format="string"/>
     </declare-styleable>
 </resources>
